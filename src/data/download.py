@@ -140,15 +140,33 @@ def download_and_extract(
     print("[download] Done.")
 
 
+def _is_already_extracted(dst_dir: Path) -> bool:
+    """True only if both metadata.csv AND at least one fold of wav files exist.
+
+    Guards against orphaned-metadata states left by previous failed extractions.
+    """
+    root = Path(dst_dir) / "UrbanSound8K"
+    metadata = root / "metadata" / "UrbanSound8K.csv"
+    if not metadata.exists():
+        return False
+    audio_root = root / "audio"
+    if not audio_root.exists():
+        return False
+    # Any fold directory must contain at least one .wav
+    for fold_dir in audio_root.iterdir():
+        if fold_dir.is_dir() and any(fold_dir.glob("*.wav")):
+            return True
+    return False
+
+
 def download(dst_dir: Path, source: str = "auto") -> None:
     """High-level entry: pick a source and run it.
 
     source: 'zenodo' | 'huggingface' | 'auto' (try Zenodo first, then HF on failure).
     """
     dst_dir = Path(dst_dir)
-    metadata = dst_dir / "UrbanSound8K" / "metadata" / "UrbanSound8K.csv"
-    if metadata.exists():
-        print(f"[download] Already extracted at {metadata.parent.parent}, skipping.")
+    if _is_already_extracted(dst_dir):
+        print(f"[download] Already extracted at {dst_dir / 'UrbanSound8K'}, skipping.")
         return
 
     if source == "zenodo":
