@@ -8,16 +8,14 @@ __pycache__/
 
 # Data (too big for git)
 /data/
-results/own_cnn/
-results/pann_cnn10/
-results/ablation_no_aug/
-results/figures/*.png
+
+# Large model weights and binary cm arrays — but keep CSV logs, JSON, PNG figures
 *.pt
 *.npy
+results/smoke_*/
 
-# But keep summary outputs
-!results/summary.csv
-!results/summary.md
+# Keep summary outputs and per-fold CSV/JSON logs (small, useful for report).
+# Figures (PNG) and per-fold CSV are intentionally NOT ignored.
 !results/.gitkeep
 
 # Editors

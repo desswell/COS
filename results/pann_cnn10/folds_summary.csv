@@ -1,0 +1,2 @@
+fold,accuracy,macro_f1,best_epoch,train_time_s,inference_time_ms_per_sample,n_params
+1,0.790378,0.806475,2,340.7,15.905,4954058
