@@ -62,8 +62,7 @@ def _download_from_huggingface(dst_dir: Path) -> None:
     `UrbanSound8K.csv` metadata file is downloaded separately from the same repo
     so we get the official 10-fold splits.
     """
-    from datasets import load_dataset
-    import soundfile as sf
+    from datasets import load_dataset, Audio
 
     dst = Path(dst_dir) / "UrbanSound8K"
     audio_root = dst / "audio"
@@ -77,18 +76,28 @@ def _download_from_huggingface(dst_dir: Path) -> None:
         urllib.request.urlretrieve(HF_CSV_URL, str(metadata_csv))
 
     print(f"[download] Loading dataset {HF_REPO_ID} from HuggingFace (~7 GB on first run)...")
-    ds = load_dataset(HF_REPO_ID, split="train")
+    # decode=False keeps the raw bytes (wav-encoded) — we just write them to disk as-is,
+    # which avoids the torchcodec / torchaudio decoder path entirely.
+    ds = load_dataset(HF_REPO_ID, split="train").cast_column("audio", Audio(decode=False))
 
     print(f"[download] Re-emitting {len(ds)} files into {audio_root} ...")
     for i, row in enumerate(tqdm(ds, total=len(ds), desc="extract", unit="file")):
         slice_name = row["slice_file_name"]
         fold = int(row["fold"])
-        audio = row["audio"]  # {'array': np.ndarray, 'sampling_rate': int, 'path': str}
+        audio = row["audio"]  # {'path': str, 'bytes': bytes} when decode=False
         fold_dir = audio_root / f"fold{fold}"
         fold_dir.mkdir(parents=True, exist_ok=True)
         out_path = fold_dir / slice_name
         if not out_path.exists():
-            sf.write(out_path, audio["array"], audio["sampling_rate"])
+            data = audio.get("bytes")
+            if data is None:
+                # Some HF audio entries may store only a path to a cached file.
+                src_path = audio.get("path")
+                if src_path and Path(src_path).exists():
+                    data = Path(src_path).read_bytes()
+                else:
+                    raise RuntimeError(f"No bytes or path for {slice_name}")
+            out_path.write_bytes(data)
     print(f"[download] Done.")
 
 
