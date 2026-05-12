@@ -35,3 +35,41 @@ def test_own_cnn_trains_one_step_without_error():
     loss.backward()
     opt.step()
     assert torch.isfinite(loss)
+
+
+import pytest
+
+from src.models.pann_cnn10 import PannCnn10Wrapper
+
+
+def test_pann_wrapper_no_pretrained_forward():
+    model = PannCnn10Wrapper(num_classes=10, pretrained=False)
+    # PANN takes raw mel-spec; 4 s × 32 kHz / 320 hop ≈ 401 frames
+    x = torch.randn(2, 1, 64, 401)
+    y = model(x)
+    assert y.shape == (2, 10)
+
+
+def test_pann_wrapper_head_is_trainable():
+    model = PannCnn10Wrapper(num_classes=10, pretrained=False)
+    trainable = [n for n, p in model.named_parameters() if p.requires_grad]
+    assert any("classifier" in n for n in trainable) or any("fc" in n for n in trainable)
+
+
+def test_pann_freeze_backbone_only_head_trainable():
+    model = PannCnn10Wrapper(num_classes=10, pretrained=False)
+    model.freeze_backbone()
+    trainable = [n for n, p in model.named_parameters() if p.requires_grad]
+    assert len(trainable) > 0
+    # All trainable params must be in the new head
+    assert all("classifier" in n for n in trainable)
+
+
+def test_pann_unfreeze_all_trainable():
+    model = PannCnn10Wrapper(num_classes=10, pretrained=False)
+    model.freeze_backbone()
+    model.unfreeze_backbone()
+    backbone_trainable = [
+        n for n, p in model.named_parameters() if p.requires_grad and "classifier" not in n
+    ]
+    assert len(backbone_trainable) > 0
