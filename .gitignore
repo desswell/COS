@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+.ipynb_checkpoints/
+
+# Data (too big for git)
+/data/
+results/own_cnn/
+results/pann_cnn10/
+results/ablation_no_aug/
+results/figures/*.png
+*.pt
+*.npy
+
+# But keep summary outputs
+!results/summary.csv
+!results/summary.md
+!results/.gitkeep
+
+# Editors
+.idea/
+.vscode/
+*.swp
