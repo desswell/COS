@@ -1,3 +1,7 @@
+# Extra packages on top of the existing shared venv (which has torch, numpy, pandas, sklearn, matplotlib, seaborn, tqdm, einops).
+# Install from the project root:
+#   & "C:\Users\desswell\work\pythonProject\.venv\Scripts\python.exe" -m pip install -r requirements-extra.txt
+torchaudio>=2.8.0
 panns-inference>=0.1.1
 soundfile>=0.12.1
 librosa>=0.10.0
