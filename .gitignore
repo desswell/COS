@@ -8,6 +8,7 @@ __pycache__/
 
 # Data (too big for git)
 /data/
+.docs/
 
 # Large model weights and binary cm arrays — but keep CSV logs, JSON, PNG figures
 *.pt
