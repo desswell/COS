@@ -21,4 +21,5 @@ results/smoke_*/
 # Editors
 .idea/
 .vscode/
+.claude/
 *.swp
